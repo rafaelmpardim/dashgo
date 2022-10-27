@@ -1,6 +1,7 @@
 import { useQuery } from 'react-query'
 
-import { api } from '../axios/api'
+import { api } from '../axios/apiClient'
+
 
 type User = {
 	createdAt: string
@@ -15,7 +16,7 @@ type GetUsersResponse = {
 }
 
 export async function getUsers(page: number): Promise<GetUsersResponse> {
-	const { data, headers } = await api.get('http://localhost:3000/api/users', {
+	const { data, headers } = await api.get('/users', {
 		params: {
 			page: page
 		}
