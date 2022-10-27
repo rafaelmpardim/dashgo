@@ -21,7 +21,8 @@ type SignInCredentials = {
 type AuthContextData = {
   isAuthenticated: boolean
 	user: User
-  signIn(credentials: SignInCredentials): Promise<void>
+  signIn: (credentials: SignInCredentials) => Promise<void>
+  signOut: () => void
 }
 
 type AuthProviderProps = {
@@ -30,9 +31,13 @@ type AuthProviderProps = {
 
 export const AuthContext = createContext({} as AuthContextData)
 
-export function signOut() {
+let dashgoChannel: BroadcastChannel
+
+function signOut() {
 	destroyCookie(undefined, 'nextauth.token')
 	destroyCookie(undefined, 'nextauth.refreshToken')
+
+	dashgoChannel.postMessage('signOut')
 
 	Router.push('/')
 }
@@ -40,6 +45,23 @@ export function signOut() {
 export function AuthProvider({ children }: AuthProviderProps) {
 	const [ user, setUser ] = useState<User>()
 	const isAuthenticated = !!user
+
+	useEffect(() => {
+		dashgoChannel = new BroadcastChannel('dashgo')
+
+		dashgoChannel.onmessage = (message) => {
+			switch (message.data) {
+			case 'signOut':
+				destroyCookie(undefined, 'nextauth.token')
+				destroyCookie(undefined, 'nextauth.refreshToken')
+
+				Router.push('/')
+				break
+			default:
+				break
+			}
+		}
+	}, [])
 
 	useEffect(() => {
 		const { 'nextauth.token': token } = parseCookies()
@@ -93,7 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	}
 
 	return (
-		<AuthContext.Provider value={{ isAuthenticated, user, signIn }}>
+		<AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut }}>
 			{ children }
 		</AuthContext.Provider>
 	)

@@ -1,6 +1,6 @@
 import { Button, Flex, Avatar, Text, Box, Icon } from '@chakra-ui/react'
 
-import { AuthContext, signOut } from '../../context/AuthContext'
+import { AuthContext } from '../../context/AuthContext'
 
 import { FiLogOut } from 'react-icons/fi'
 import { useContext } from 'react'
@@ -10,7 +10,7 @@ interface ProfileProps {
 }
 
 export function Profile({ showProfileData = true}: ProfileProps) {
-	const { user } = useContext(AuthContext)
+	const { user, signOut } = useContext(AuthContext)
 
 	return (
 		<Flex align='center' >
