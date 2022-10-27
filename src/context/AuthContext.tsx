@@ -33,7 +33,7 @@ export const AuthContext = createContext({} as AuthContextData)
 
 let dashgoChannel: BroadcastChannel
 
-function signOut() {
+export function signOut() {
 	destroyCookie(undefined, 'nextauth.token')
 	destroyCookie(undefined, 'nextauth.refreshToken')
 
