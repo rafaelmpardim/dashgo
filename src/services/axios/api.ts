@@ -20,7 +20,7 @@ export function setupAPIClient(ctx = undefined) {
 	api.interceptors.response.use(
 		response => { return response },
 	
-		(error: AxiosError) => {
+		(error) => {
 		
 			if (error.response.status === 401) {
 				if (error.response.data?.code === 'token.expired') {
