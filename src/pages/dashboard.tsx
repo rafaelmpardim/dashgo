@@ -1,7 +1,15 @@
-import { Box, Flex, SimpleGrid, Text, theme } from '@chakra-ui/react'
 import dynamic from 'next/dynamic'
+
+import { setupAPIClient } from '../services/axios/api'
+
+import { withSSRAuth } from '../utils/withSSRAuth'
+
 import { Header } from '../components/Header'
 import { Sidebar } from '../components/Sidebar'
+import { Can } from '../components/Can'
+
+import { Box, Flex, SimpleGrid, Text, theme } from '@chakra-ui/react'
+import Head from 'next/head'
 
 const Chart = dynamic(() => import('react-apexcharts'), {
 	ssr: false
@@ -83,43 +91,79 @@ const series = [
 
 export default function Dashboard() {
 	return (
-		<Flex direction='column' h='100vh' >
-			<Header />
+		<>
+			<Head>
+				<title>dashgo. - Dashboard</title>
+			</Head>
+		
+			<Flex direction='column' h='100vh'>
+				<Header />
 
-			<Flex
+				<Flex
 			  maxW={1480}
 			  mx='auto'
 			  my='6'
 			  px='6'
 			  w='100%'
-			>
-				<Sidebar />
+				>
+					<Sidebar />
 
-				<SimpleGrid
+					<SimpleGrid
 				  flex='1'
 				  gap='4'
 				  minChildWidth='320px'
-				>
-					<Box borderRadius={8} bg='gray.800' p={['6', '8']}>
-						<Text fontSize='lg' mb='4'>Inscritos da semana</Text>
-						<Chart
-						  height={180}
-						  options={options}
-						  series={series}
-						  type='area'
-						/>
-					</Box>
-					<Box borderRadius={8} bg='gray.800' p={['6', '8']}>
-						<Text fontSize='lg' mb='4'>Taxa de abertura</Text>
-						<Chart
-						  height={180}
-						  options={options}
-						  series={series}
-						  type='area'
-						/>
-					</Box>
-				</SimpleGrid>
+					>
+						<Can>
+							<Box borderRadius={8} bg='gray.800' p={['6', '8']}>
+								<Text fontSize='lg' mb='4'>Gráfico para os <span>USUÁRIOS</span></Text>
+								<Chart
+									height={180}
+									options={options}
+									series={series}
+									type='area'
+								/>
+							</Box>
+						</Can>
+						<Can
+							permissions={['admin.manager']}
+							roles={['admin']}
+						>
+							<Box borderRadius={8} bg='gray.800' p={['6', '8']}>
+								<Text fontSize='lg' mb='4'>Gráfico para os <span>ADMIM MANAGER</span></Text>
+								<Chart
+									height={180}
+									options={options}
+									series={series}
+									type='area'
+								/>
+							</Box>
+						</Can>
+						<Can
+							permissions={['admin.master']}
+							roles={['admin']}
+						>
+							<Box borderRadius={8} bg='gray.800' p={['6', '8']}>
+								<Text fontSize='lg' mb='4'>Gráfico para os <span>ADMIM MASTER</span></Text>
+								<Chart
+									height={180}
+									options={options}
+									series={series}
+									type='area'
+								/>
+							</Box>
+						</Can>
+					</SimpleGrid>
+				</Flex>
 			</Flex>
-		</Flex>
+		</>
 	)
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+	const apiCLient = setupAPIClient(ctx)
+	const response = await apiCLient.get('me')
+
+	return {
+		props: {}
+	}
+})

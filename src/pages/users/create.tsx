@@ -6,14 +6,19 @@ import { useRouter } from 'next/router'
 
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { api } from '../../services/axios/api'
+
+import { setupAPIClient } from '../../services/axios/api'
+import { queryClient } from '../../services/queryClient'
+import { api } from '../../services/axios/apiClient'
+
+import { withSSRAuth } from '../../utils/withSSRAuth'
 
 import { Box, Button, Divider, Flex, Heading, HStack, SimpleGrid, VStack } from '@chakra-ui/react'
 
 import { Input } from '../../components/Form/Input'
 import { Header } from '../../components/Header'
 import { Sidebar } from '../../components/Sidebar'
-import { queryClient } from '../../services/queryClient'
+import Head from 'next/head'
 
 type CreateUserFormData = {
 	email: string
@@ -58,77 +63,94 @@ export default function CreateUser() {
 	}
 
 	return (
-		<Box>
-			<Header />
+		<>
+			<Head>
+				<title>dashgo. - Novo usuário</title>
+			</Head>
+			<Box>
+				<Header />
 
-			<Flex
+				<Flex
 			  maxW={1480}
 			  mx='auto'
 			  my='6'
 			  px='6'
 			  w='100%'
-			>
-				<Sidebar />
+				>
+					<Sidebar />
 
-				<Box
+					<Box
 				  as='form'
 				  bg='gray.800'
 				  borderRadius={8}
 				  flex='1'
-					onSubmit={handleSubmit(handleCreateUser)}
+						onSubmit={handleSubmit(handleCreateUser)}
 				  p={['6', '8']}
-				>
-					<Heading fontWeight='normal' size='lg'>Criar usuário</Heading>
-					<Divider borderColor='gray.700' my='6'/>
+					>
+						<Heading fontWeight='normal' size='lg'>Criar usuário</Heading>
+						<Divider borderColor='gray.700' my='6'/>
 
-					<VStack spacing='8'>
-						<SimpleGrid minChildWidth='240px' spacing={['6', '8']} w='100%'>
-							<Input
-								error={errors.name}
+						<VStack spacing='8'>
+							<SimpleGrid minChildWidth='240px' spacing={['6', '8']} w='100%'>
+								<Input
+									error={errors.name}
 							  label='Nome completo'
-								{...register('name')}
-							/>
-							<Input
-								error={errors.email}
+									{...register('name')}
+								/>
+								<Input
+									error={errors.email}
 							  label='E-mail'
 							  type='email'
-								{...register('email')}
-							/>
-						</SimpleGrid>
+									{...register('email')}
+								/>
+							</SimpleGrid>
 
-						<SimpleGrid minChildWidth='240px' spacing={['6', '8']} w='100%'>
-							<Input
-								error={errors.password}
+							<SimpleGrid minChildWidth='240px' spacing={['6', '8']} w='100%'>
+								<Input
+									error={errors.password}
 							  label='Senha'
 							  type='password'
-								{...register('password')}
-							/>
-							<Input
-								error={errors.password_confirmation}
+									{...register('password')}
+								/>
+								<Input
+									error={errors.password_confirmation}
 							  label='Confime a senha'
 							  type='password'
-								{...register('password_confirmation')}
-							/>
-						</SimpleGrid>
-					</VStack>
+									{...register('password_confirmation')}
+								/>
+							</SimpleGrid>
+						</VStack>
 
-					<Flex justify='flex-end' mt='8'>
-						<HStack spacing='4'>
-							<Link href='/users' passHref >
-								<Button as='a' colorScheme='whiteAlpha'>Cancelar</Button>
-							</Link>
+						<Flex justify='flex-end' mt='8'>
+							<HStack spacing='4'>
+								<Link href='/users' passHref >
+									<Button as='a' colorScheme='whiteAlpha'>Cancelar</Button>
+								</Link>
 							
-							<Button
+								<Button
 							  colorScheme='pink'
-								isLoading={isSubmitting}
+									isLoading={isSubmitting}
 							  type='submit'
-							>
+								>
 								Salvar
-							</Button>
-						</HStack>
-					</Flex>
-				</Box>
-			</Flex>
-		</Box>
+								</Button>
+							</HStack>
+						</Flex>
+					</Box>
+				</Flex>
+			</Box>
+		</>
 	)
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+	const apiCLient = setupAPIClient(ctx)
+	const response = await apiCLient.get('me')
+
+	return {
+		props: {}
+	}
+}, {
+	permissions: ['admin.master'],
+	roles: ['admin']
+})
